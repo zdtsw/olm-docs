@@ -27,13 +27,13 @@ is a diagram that shows the relationship of operator versions to channels:
 
 In the diagram above you can see the following:
   
-  - A catalog named “vendor:v4.6”, this catalog is built by a cluster administrator typically
+  - A catalog named “redhat:v4.6”, this catalog is built by a cluster administrator typically
   - There are 2 operator packages found in the catalog, myoperator and otheroperator.
   - The myoperator has 3 bundles (1.0.0, 1.0.1, 1.0.2).  Versions 1.0.0 and 1.0.1 are in multiple channels (fast, stable).  Whereas version 1.0.2 is only in the fast channel.
-  - The otheroperator has 2 bundles specifying 2 different channels (candidate, stable).  Version 1.4.0 specifies it is within 2 channels, stable and candidate.
+  - The otheroperator has 2 bundles specifying 2 different channels (preview, stable).  Version 1.4.0 specifies it is within 2 channels, stable and preview.
 
 
-Here is the view of another catalog, “vendor:v4.7”, that shows you can change 
+Here is the view of another catalog, “redhat:v4.7”, that shows you can change 
 the upgrade path for an operator by what operator bundles are contained 
 within the catalog:
 
@@ -41,19 +41,19 @@ within the catalog:
 
 ### Defining Channels
 
-Operator authors define the channels they intend to use by creating labels within their operator bundle.  Bundles  contain metadata about a particular operator version.  For example, when you build an operator bundle, you specify an annotations.yaml manifest which gets included into the bundle image.  Here is an example  snippet of an annotations.yaml file including channel information for that operator:
+Operator authors define the channels they intend to use by creating labels within their operator bundle.  Bundles  contain metadata about a particular operator version.  For example, when you build an operator bundle, you specify an `annotations.yaml` manifest which gets included into the bundle image.  Here is an example  snippet of an `annotations.yaml` file including channel information for that operator:
 
 ```
 annotations:
-  operators.operatorframework.io.bundle.channels.v1: candidate
-  operators.operatorframework.io.bundle.channel.default.v1: candidate
+  operators.operatorframework.io.bundle.channels.v1: preview
+  operators.operatorframework.io.bundle.channel.default.v1: preview
   operators.operatorframework.io.bundle.manifests.v1: manifests/
   operators.operatorframework.io.bundle.mediatype.v1: registry+v1
   operators.operatorframework.io.bundle.metadata.v1: metadata/
   operators.operatorframework.io.bundle.package.v1: otheroperator
 ```
 
-This example shows that you are defining the candidate channel to be used for 
+This example shows that you are defining the preview channel to be used for 
 this operator bundle.  Operator bundles are loaded into an Operator Index 
 image using the opm command.  It is important to note that by specifying a 
 channel value like this, you are essentially creating a channel which can 
@@ -73,9 +73,9 @@ also used if you create a Subscription that doesn’t specify a channel.
 
 If your operator bundles do not specify a default channel, a default channel 
 will be picked by OLM based on the lexical ordering of the channels you have 
-specified.  For example, if your bundles specified channels of candidate and 
-stable, then candidate would be picked based solely on the names chosen and 
-character ordering (e.g. ‘p’ comes before ‘s’).  Dependency resolution is 
+specified.  For example, if your bundles specified channels of preview and 
+stable, then preview would be picked based solely on the names chosen and 
+character ordering (i.e ‘p’ comes before ‘s’).  Dependency resolution is 
 described in more detail [here][dependency-resolution].
 
 ### Deploying Operators from Channels
@@ -242,17 +242,16 @@ to ensure the older Operator bundle does not get pruned from the index catalog v
 
 If you have the channel `stable-v3.7` where the head of channel is `v3.7.10`, and you have a new patch release
 with a bug fix using the Operator bundle version `v3.7.11` , and you configure `v3.7.11` to skip all
-operator bundles published in the channel `stable-v3.7` (e.g.`v3.7.11` mentions  skipRange: `">= 3.7.0 < 3.7.11"` replaces: `3.6.z <latest release on 3.6 channel>` ).
-
-, you could ensure that your users can more easily upgrade to the latest version since they will 
-be able to install the new `3.7.11` release directly from `3.6.z <latest release on 3.6 channel>` instead of 
-having to upgrade through Operator version `3.7.0` which may contain bugs that are already fixed in both the `3.6.z` 
-version they had installed, and the `3.7.11` version they are moving to.
+operator bundles published in the channel `stable-v3.7` (e.g.`v3.7.11` mentions  skipRange: `">= 3.7.0 < 3.7.11"` replaces: `3.6.z` <latest release on 3.6 channel> ),
+you could ensure that your users can more easily upgrade to the latest version since they will 
+be able to install the new `3.7.11` release directly from `3.6.z` <latest release on 3.6 channel> instead of 
+having to upgrade through Operator version `3.7.0` which may contain bugs that are already fixed in the `3.6.z` 
+version they had installed and the `3.7.11` version they are moving to.
 
 However, this approach has negative implications when you provide your next patch release to the minor channel `stable-v3.6`.  
-Note that if you publish `3.6.latest+1` when this version comes out, and your users upgrade to it, they will have no way to
-upgrade from `3.6.latest+1` to any solution published under the channel `stable-v3.7`, 
-until you publish a new `3.7.z` version that replaces `3.6.latest+1.
+Note that if you publish `3.6.(z+1)` when this version comes out, and your users upgrade to it, they will have no way to
+upgrade from `3.6.(z+1)` to any solution published under the channel `stable-v3.7`, 
+until you publish a new `3.7.12` version that replaces `3.6.(z+1)`.
 
 [dependency-resolution]: https://olm.operatorframework.io/docs/concepts/olm-architecture/dependency-resolution/
 [subscription]: https://olm.operatorframework.io/docs/concepts/crds/subscription/
